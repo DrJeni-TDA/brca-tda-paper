@@ -1,0 +1,55 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,graphicx,siunitx,float}
+\usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue]{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{xcolor}
+\input{macros}
+
+% Working title; to be fixed after the results.
+\title{Persistent homology of within-patient molecular change on a gene interaction network\\ in paired breast tumour and adjacent normal tissue}
+\author{Jenifer Steffi$^{1}$ \and Satarupa Banerjee$^{2}$ \and Soumen Sarkar$^{1}$ \\[4pt]
+\small $^{1}$Department of Mathematics, Indian Institute of Technology Madras, Chennai 600036, India\\
+\small $^{2}$Vellore Institute of Technology, India \todo{department and city}\\[2pt]
+\small E-mail: \texttt{drjenifersteffi@gmail.com} (J.S.)\\
+\small Corresponding author: Soumen Sarkar, \texttt{soumen at iitm dot ac dot in}}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\todo{Write after the results. Structure: Background, Methods, Results, Conclusions.}
+\end{abstract}
+
+\noindent\textbf{Keywords:} breast cancer; persistent homology; lower-star filtration; protein interaction network; paired design; TCGA
+
+\input{sections/01_introduction}
+\input{sections/02_methods}
+\input{sections/03_results}
+\input{sections/04_discussion}
+\input{sections/05_limitations}
+
+\section*{Data and code availability}
+The TCGA-BRCA data were obtained from the NCI Genomic Data Commons (open-access files). \todo{File list with SHA-256 hashes in the code repository (\texttt{docs/provenance}); hash of the input file; repository \texttt{github.com/DrJeni-TDA/brca-tda}, version tag and commit; GDC data-use terms; confirmation cohort and its access route.}
+
+\section*{Acknowledgements}
+This work was supported by ICSR Grant No.\ RF24250543MARFER008771, IIT Madras. We thank The Cancer Genome Atlas and the patients who contributed specimens.
+\todo{Further acknowledgements and author contributions: to be added by the authors.}
+
+% Remove \nocite{*} once the text cites the references.
+\nocite{*}
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\clearpage
+\appendix
+\renewcommand{\thesection}{S\arabic{section}}
+\section*{Supplementary material}
+\input{supplement/S1_analysis_plan}
+
+\end{document}
