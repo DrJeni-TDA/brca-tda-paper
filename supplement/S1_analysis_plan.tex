@@ -1,2 +1,13 @@
-\section{Analysis plan}\label{app:plan}
-\todo{Summary of the frozen analysis plan, with its tag and SHA-256.}
+\section{Analysis plan}\label{sec:plan}
+
+The complete analysis plan is \texttt{docs/analysis\_plan.md} in the code repository \coderepo. It is written before any tumour-versus-normal outcome of patient data is computed and will be frozen by the Git tag \texttt{plan-v1.0}, whose SHA-256 is recorded in \texttt{docs/provenance}. Its main elements are listed here.
+
+\paragraph{Hypotheses, in order.} $H_{\mathrm{sym}}$: within each patient tumour and normal profiles are exchangeable (Level 1, sign-flip test of $A_i$). $H_{\mathrm{net}}$: the network-adjusted asymmetry $Z_i$ is sign-symmetric (Level 2). $H_{\mathrm{gene}}(g)$: the gene score $a_i(g)$ is sign-symmetric (Level 3, Holm over the whole gene family). Rejecting one does not imply rejecting another.
+
+\paragraph{Pre-declared outcomes.} (A) Levels 1 and 2 supported, genes stable and confirmed in the independent cohort: reproducible, network-specific directional organisation with replicated signature genes. (B) Levels 1 and 2 supported, genes unstable or unconfirmed: a patient-level result without gene-specific claims. (C) Level 1 supported, Level 2 not: directional asymmetry without demonstrated network specificity. (D) Level 1 not supported: a calibrated negative result. In every outcome the comparison with baselines B1--B9 is reported.
+
+\paragraph{Claims not made.} That a cycle or module is a pathway or mechanism; that a gene causes the difference; that the data show how a tumour develops; that topology finds information absent from the molecular data (the diagrams are functions of the change and the network); that a new topological construction is introduced; that a replicated signature gene is a clinical biomarker; that a result attenuated by composition adjustment reflects regulation within tumour cells.
+
+\paragraph{Simulation gates.} Each null run passes if the one-sided exact binomial test of ``rejection rate $\le0.05$'' gives $p\ge0.01$. Development and verification seed ranges are separate; the verification suite is run once on the final code, and its results are the ones reported in the final version of this paper.
+
+\paragraph{Changes made after results were seen.} The matched experiment, the network-adjusted score and baseline B9 were added to the plan before their simulations were run. No endpoint has been added or changed after its simulation results were seen. \todo{keep this list complete up to the freeze.}

@@ -1,2 +1,48 @@
 \section{Results}\label{sec:results}
-\todo{Written only after the analysis plan is frozen and the frozen analysis has been run.}
+
+\subsection{The paired tests are calibrated}\label{sec:res-cal}
+With no change between tumour and normal, the Level~1 test of the $\Hone$ asymmetry rejected at the 0.05 level in \calNormalL\% of \calNormalN{} data sets with normal noise (95\% confidence interval \calNormalLci\%), in \calTthreeL\% of \calTthreeN{} with heavy-tailed $t_3$ noise and in \calSkewedL\% of \calSkewedN{} with skewed noise (Table~\ref{tab:calibration}). Holm's procedure over the gene family rejected at least one gene in \calNormalG\%, \calTthreeG\% and \calSkewedG\% of data sets. All six rates passed the inflation gate. The Level~1 $p$-values were close to uniform with normal and skewed noise (Kolmogorov--Smirnov $p=\calNormalKS$ and $\calSkewedKS$; Figure~\ref{fig:calibration}); with $t_3$ noise their distribution departed slightly from uniformity ($p=\calTthreeKS$) while the rejection rate at 0.05 stayed within its confidence interval. These runs are a check of the implementation as much as of the theory: Proposition~\ref{prop:antisym} makes the test exact under $H_{\mathrm{sym}}$, and the simulation confirms that the tie rule, the filtrations and the Monte Carlo $p$-values are implemented so that this holds on subnetworks of the real STRING graph, with their degree heterogeneity and triangle density.
+
+\begin{table}[t]
+\centering\small
+\caption{Calibration under the null hypothesis: share of data sets rejected at the 0.05 level, with exact binomial 95\% confidence intervals. 800-gene STRING subnetworks, 78 patients, one layer. Level 1: sign-flip test of the $\Hone$ asymmetry $A_i$ ($B=9{,}999$). Gene family: at least one gene rejected after Holm over all genes with a non-zero score in at least 10 patients.}
+\label{tab:calibration}
+\input{generated/tab_calibration}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_calibration.pdf}
+\caption{Level 1 $p$-values under the null hypothesis against uniform quantiles, for three noise distributions. The dashed line is the identity.}
+\label{fig:calibration}
+\end{figure}
+
+\subsection{Raw $\Hone$ asymmetry is dominated by connected blocks of change}\label{sec:res-matched}
+In the matched experiment each data set had one to three cycle centres and a median of \decOneChanged{} changed genes. Every directional statistic responded to the change, but none separated the cycle arm from the module arm across data sets: the AUC was between 0.34 and 0.54 for every statistic at both effect sizes (Table~\ref{tab:matched}). The variation between data sets, which differ in subnetwork and in the number of centres, was much larger than the difference made by the hole.
+
+The sign of $A_i$ is informative. A cycle of increased genes around an unchanged centre should raise $\Lup_i$ and make $A_i$ positive. Instead $A_i$ was strongly negative in both arms (mean $t=\tcycATwo$ in the cycle arm and $\tmodATwo$ in the module arm at size 2). This is consistent with the following mechanism. In the lower-change filtration a block of increased genes enters last; the unchanged genes around it enter earlier and form cycles that the block's genes fill when they enter, each with a lifetime close to the size of the change. Such cycles add to $\Ldown_i$ whether or not the block encloses a hole, and there are many of them, whereas the planted hole adds one class to $\Lup_i$. On an interaction network with many triangles, raw directional $\Hone$ persistence is therefore largely a measure of where blocks of change sit, much like the $\Hzero$ asymmetry (B4, mean $t=\tcycBfourTwo$ and $\tmodBfourTwo$) and the component contrast (B3).
+
+\begin{table}[t]
+\centering\small
+\caption{Matched cycle--module experiment (\decOneN{} data sets per size). Paired: share of data sets in which the statistic was larger in the cycle arm than in the module arm built from the same noise on the same subnetwork, with exact 95\% confidence intervals (ties count as not larger). AUC: $P(t_{\mathrm{cycle}}>t_{\mathrm{module}})$ across data sets. Size: change in units of the noise standard deviation.}
+\label{tab:matched}
+\input{generated/tab_matched}
+\end{table}
+
+\subsection{$\Hone$ carries a small hole-specific signal}\label{sec:res-signal}
+The within-pair comparison removes the variation between data sets and isolates the effect of the hole (Figure~\ref{fig:matched}). The $\Hone$ statistics were larger in the cycle arm than in its matched module arm more often than chance, and more often at the larger effect size: $A_i$ in \pairAOne\% and \pairATwo\% of data sets at sizes 1 and 2, its rank variant in \pairArankOne\% and \pairArankTwo\%, and the network-adjusted $Z_i$ in \pairZOne\% (95\% CI \pairZOneci\%) and \pairZTwo\% (\pairZTwoci\%). The statistics without topology did not change with effect size: the component contrast in \pairBthreeOne\% and \pairBthreeTwo\%, the local-extremum depth B9, which targets the same configuration without topology, in \pairBnineOne\% and \pairBnineTwo\%, and the $\Hzero$ asymmetry in \pairBfourOne\% and \pairBfourTwo\%. The burden B1, which counts the same number of changed genes in both arms, behaved as a negative control (\pairBoneOne\% and \pairBoneTwo\%, ties counting as not larger).
+
+Moran's $I$ separated the two patterns more sharply than any $\Hone$ statistic, but in the opposite direction: the signed autocorrelation B2 was larger in the module arm in almost every data set (larger in the cycle arm in \pairBtwoOne\% and \pairBtwoTwo\%), because in that arm the centre changes together with its neighbours. The honest summary is therefore that $\Hone$ adds a hole-specific component that $\Hzero$, component size and the local-extremum statistic do not have, not that $\Hone$ is the best detector of the difference between the two patterns.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_matched.pdf}
+\caption{Matched cycle--module experiment. For each statistic, the share of matched data sets in which the statistic was larger in the cycle arm than in the module arm, with exact 95\% confidence intervals, at change sizes 1 (circles) and 2 (squares). The dashed line marks 50\%, the value expected if the hole made no difference.}
+\label{fig:matched}
+\end{figure}
+
+\subsection{Degree- and clustering-matched relabelling does not remove hub effects}\label{sec:res-hub}
+When only the genes in the top 5\% of degree changed, the raw asymmetry rejected $H_{\mathrm{sym}}$ in \hubA\% of \hubN{} data sets, as it should, since the change is real. The network-adjusted score is meant to remove effects of this kind. It did not: the Level 2 test of $Z_i$ rejected in \hubZ\% of data sets (95\% CI \hubZci\%), far above the target of 5\%, and \hubZneg{} of the \hubZk{} rejections had a negative statistic. The likely reason is that high-degree genes in STRING are often connected to each other \citep{colizza2006}. Relabelling within degree and clustering strata moves each hub's change to another gene of similar degree, but the genes that receive the changes are usually not adjacent to one another, so the reference loses the joint arrangement that the hubs have in the real network. $Z_i$ then reports, correctly, that the changed genes are arranged unusually; but the unusual arrangement is the connectedness of hubs, not a hole. A reference that preserves the adjacency among the changed genes, or a rewiring model \citep{maslov2002}, would be needed to make $Z_i$ specific, and we have not shown that either would.
+
+\subsection{Application to TCGA-BRCA}\label{sec:res-tcga}
+\pending{To be computed once the analysis plan is frozen (Git tag \texttt{plan-v1.0}). Planned content: cohort size after the annotation review; layer-specific network sizes; Level 1 and Level 2 results for RNA and methylation with Holm over layers; all baselines B1--B9 on the same patients; gene family and its stability; pre-specified sensitivity analyses; placebo pseudo-pairs. Results will be reported whatever their direction.}

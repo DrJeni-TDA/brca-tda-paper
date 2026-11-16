@@ -1,23 +1,99 @@
 \section{Methods}\label{sec:methods}
-\subsection{Cohort and data}\label{sec:cohort}
-\todo{TCGA-BRCA paired specimens, layers, selection rules.}
-\subsection{Preprocessing and the change vector}\label{sec:prep}
-\todo{}
-\subsection{Gene interaction network}\label{sec:network}
-\todo{}
-\subsection{Filtrations and persistent homology}\label{sec:ph}
-\todo{}
-\subsection{Ring representatives}\label{sec:rings}
-\todo{}
+
+\subsection{Overview}\label{sec:overview}
+For each patient $i=1,\dots,N$ and each molecular layer we form the signed change $\dchange_i(v)$ of every gene $v$ between the tumour and the matched normal specimen, place it on a fixed interaction network, and summarise its arrangement by persistent homology. The patient is the unit of inference throughout. Section~\ref{sec:ph} defines the complex, the filtrations and a tie rule; Section~\ref{sec:endpoints} the endpoints; Section~\ref{sec:inference} the tests; Section~\ref{sec:baselines} the non-topological baselines; Section~\ref{sec:simulation} the simulation study; and Section~\ref{sec:cohort} the breast cancer data.
+
+\subsection{Network, complex and change vector}\label{sec:network}
+Let $G=(V,E)$ be the STRING v12.0 human physical-interaction network \citep{szklarczyk2023} at combined score $\ge 700$, restricted to the genes measured in a layer, with the induced edges, and reduced to its largest connected component. The network is fixed before any molecular value is seen, and each layer has its own network, so that no measured gene is lost to a requirement that it be measured in another layer. Let $K$ be the 2-skeleton of the clique complex of $G$: its vertices, edges and triangles (3-cliques). The 2-skeleton determines $\Hone$, so higher simplices are not needed. At this score threshold the full STRING graph has 9{,}830 genes, 85{,}576 edges and 967{,}829 triangles, and the static complex has first Betti number 4{,}160.
+
+For patient $i$ the change vector is
+\begin{equation}\label{eq:delta}
+\dchange_i(v) = x_{T,i}(v) - x_{N,i}(v),
+\end{equation}
+where $x=\log_2(\mathrm{TPM}+1)$ for RNA and $x$ is the promoter $M$-value for methylation (Section~\ref{sec:cohort}). Exchanging the two specimens of a patient replaces $\dchange_i$ by $-\dchange_i$; this is the only property of $\dchange_i$ that the tests require. A standardised change (each specimen centred by its median across genes, then each gene scaled by the median and median absolute deviation of all $2N$ specimens, with no tumour/normal label) is a pre-specified sensitivity analysis; it is also sign-equivariant.
+
+\subsection{Filtrations, tie rule and persistence}\label{sec:ph}
+For a function $f:V\to\R$, the lower-star filtration assigns to every simplex $\sigma\in K$ the value $f(\sigma)=\max_{v\in\sigma} f(v)$ and considers the nested subcomplexes $K_t=\{\sigma: f(\sigma)\le t\}$. Faces enter no later than their cofaces, so $(K_t)$ is a filtration. We use two: the \emph{higher-change} filtration $f=-\dchange_i$, in which the most increased genes enter first, and the \emph{lower-change} filtration $f=\dchange_i$, in which the most decreased genes enter first.
+
+\paragraph{Tie rule.} Measured changes can be tied, and persistence pairs (and cycle representatives) depend on how simplices with equal values are ordered. We rank genes by the pair $(f(v), v)$, so that ties are broken by a fixed gene index, and order simplices by the largest rank among their vertices, then by dimension, then by their sorted vertex indices. This defines one total order of $K$ without changing any value. Persistence pairs are computed in this order, and each interval's birth and death are the observed values $f(\sigma)$ of its birth edge and death triangle, so every lifetime is a difference of two observed changes. Intervals of length zero, which arise only from tied values, are not intervals of the lower-star filtration and are discarded. Because $-\dchange$ is ranked by the same rule, the higher-change filtration of $\dchange$ coincides with the lower-change filtration of $-\dchange$, ties included.
+
+\paragraph{Persistence.} Persistent homology over $\Fii$ \citep{edelsbrunner2002} gives, for each filtration, a diagram $D$ of $\Hone$ intervals $[b,d)$. Essential classes (cycles of the network itself, $d=\infty$) are counted but excluded from the endpoints. We compute persistence with GUDHI \citep{maria2014} on the simplex ranks and map births and deaths back to observed values. Two standard properties are used below: for a constant $c$, adding $c$ to every value shifts every interval by $c$ and leaves every lifetime unchanged; and multiplying every value by $a>0$ multiplies every lifetime by $a$. Lifetimes are stable under perturbation of $f$ in the sup norm \citep{cohensteiner2007}.
+
+\paragraph{Exact cycle representatives.} For gene attribution we need, for each finite class, a cycle that represents it. We reduce, over $\Fii$ and in the total order above, the boundary columns of the triangles that kill $\Hone$ classes. The reduced column of a death triangle $\tau$ is a 1-cycle whose last edge is the birth edge of the class; it is not a boundary before $\tau$ enters and is one from $\tau$ on, so it represents exactly the class born at that edge and killed by $\tau$. Its vertices are the class's \emph{representative members}. A class has many representatives; this one is fixed by the total order and is deterministic, not biologically canonical, and the dependence of gene scores on it is measured (Section~\ref{sec:cohort}). In the software every pivot is checked against GUDHI's pairing, and unit tests check every representative against an independent full reduction of the boundary matrix.
+
+\subsection{Endpoints}\label{sec:endpoints}
+For patient $i$ let $D^{\uparrow}_i$ and $D^{\downarrow}_i$ be the finite $\Hone$ diagrams of the higher- and lower-change filtrations, and
+\begin{equation}
+\Lup_i=\sum_{[b,d)\in D^{\uparrow}_i}(d-b),\qquad \Ldown_i=\sum_{[b,d)\in D^{\downarrow}_i}(d-b).
+\end{equation}
+The \emph{primary endpoint} is the asymmetry $A_i=\Lup_i-\Ldown_i$.
+
+\begin{proposition}[Exact sign reversal]\label{prop:antisym}
+For every change vector $\dchange$, $A(-\dchange)=-A(\dchange)$.
+\end{proposition}
+\begin{proof}
+The higher-change filtration of $-\dchange$ uses $f=\dchange$, ranked by $(\dchange(v),v)$; this is the lower-change filtration of $\dchange$, with the same total order and the same observed values. Hence $D^{\uparrow}(-\dchange)=D^{\downarrow}(\dchange)$ and, symmetrically, $D^{\downarrow}(-\dchange)=D^{\uparrow}(\dchange)$, so $\Lup$ and $\Ldown$ exchange and $A$ changes sign.
+\end{proof}
+
+A positive $A_i$ means that increased genes form more persistent unfilled cycles than decreased genes. Two variants are pre-specified. The \emph{rank variant} replaces $\dchange_i$ by its centred within-patient average rank $\rho_i(v)=\rank_i(v)-(|V|+1)/2$; average ranks satisfy $\rank(-\dchange)=|V|+1-\rank(\dchange)$ exactly, so $\rho$ is also exactly sign-reversing, and a result that holds for $\dchange$ but not for $\rho$ is driven by the size of the changes rather than their order. The \emph{direction-free total} $P_i=\Lup_i+\Ldown_i$ is invariant under exchange and is used only descriptively.
+
+\paragraph{Gene score.} With $C^{\uparrow}_i$ and $C^{\downarrow}_i$ the finite classes of the two filtrations and $z_c$ the representative of class $c$,
+\begin{equation}
+a_i(g)=\sum_{c\in C^{\uparrow}_i:\,g\in\supp z_c}\pers(c)\;-\sum_{c\in C^{\downarrow}_i:\,g\in\supp z_c}\pers(c),\qquad a_i(g;-\dchange_i)=-a_i(g;\dchange_i).
+\end{equation}
+A gene with a large score is a \emph{topological participant}: it lies on persistent cycles of one direction. It need not itself be strongly changed.
+
+\paragraph{Network-adjusted score.} To separate the arrangement of changes on the network from their size, we compare each patient's asymmetry with a reference in which that patient's own changes are placed at other positions of the same kind. Genes are stratified by degree decile $\times$ local clustering coefficient tercile, optionally crossed with terciles of each gene's mean and variance over all $2N$ specimens pooled (pooled statistics do not change when a patient's specimens are exchanged). For patient $i$, $R$ permutations $\pi_{i1},\dots,\pi_{iR}$ of the genes within strata are drawn from a random seed that depends only on a master seed and on $i$, never on the data. Relabelling $r$ moves $\dchange_i(g)$ to node $\pi_{ir}(g)$, and $A$ is recomputed, giving $A^{*}_{ir}$ with mean $\mu_i$ and standard deviation $\sigma_i$. The network-adjusted score is
+\begin{equation}\label{eq:Z}
+Z_i=\frac{A_i-\mu_i}{\max(\sigma_i,\varepsilon)},\qquad \varepsilon=0.1\times\operatorname{median}_j\sigma_j .
+\end{equation}
+
+\begin{proposition}\label{prop:Z}
+For fixed strata, $Z_i(-\dchange_i)=-Z_i(\dchange_i)$ for every patient.
+\end{proposition}
+\begin{proof}
+The permutations do not depend on $\dchange_i$, and relabelling commutes with negation, so by Proposition~\ref{prop:antisym} $A^{*}_{ir}(-\dchange_i)=-A^{*}_{ir}(\dchange_i)$ for every $r$. Hence $\mu_i$ changes sign, $\sigma_i$ is unchanged, $\varepsilon$ (a function of the $\sigma_j$) is unchanged, and $Z_i$ changes sign.
+\end{proof}
+
+The floor $\varepsilon$ prevents a near-zero reference spread from inflating $Z_i$. What $Z_i$ removes is determined by the reference: it adjusts for the distribution of the patient's own changes and for degree and clustering, but not for the adjacency of the changed genes to one another. This limitation turned out to matter (Section~\ref{sec:res-hub}).
+
 \subsection{Statistical inference}\label{sec:inference}
-\todo{}
-\subsection{Network-specificity analysis}\label{sec:specificity}
-\todo{}
+\paragraph{Level 1: paired asymmetry.} The null hypothesis $H_{\mathrm{sym}}$ states that, within each patient, the tumour and normal profiles are exchangeable, and that patients are independent. Under $H_{\mathrm{sym}}$ the vector $(A_1,\dots,A_N)$ has the same distribution as $(s_1A_1,\dots,s_NA_N)$ for every fixed sign vector $s\in\{-1,1\}^N$ (Proposition~\ref{prop:antisym}). For each layer we use the studentized mean $t=\sqrt{N}\,\bar A/s_A$ and the Monte Carlo sign-flip $p$-value
+\begin{equation}
+p=\frac{1+\#\{b\le B:|t_b|\ge|t_0|\}}{B+1},\qquad B=9{,}999,
+\end{equation}
+with one sign matrix shared by all layers. Counting the observed statistic makes $P(p\le\alpha)\le\alpha$ for every $\alpha$ under $H_{\mathrm{sym}}$, so the test is exact in finite samples \citep{phipson2010}. Holm's procedure \citep{holm1979} over layers controls the family-wise error rate (FWER) at 0.05. $H_{\mathrm{sym}}$ can fail for reasons that are not biology of interest, for example if tumour and normal specimens were processed in different batches; this is examined in sensitivity analyses.
+
+\paragraph{Level 2: network-adjusted asymmetry.} $Z_1,\dots,Z_N$ are tested in the same way, with Holm over layers. By Proposition~\ref{prop:Z} the test is exact under sign symmetry of the $Z_i$. Whether a rejection reflects arrangement on the network, rather than an effect that the reference does not remove, is a property of the reference model and not of the test; Section~\ref{sec:res-hub} checks it.
+
+\paragraph{Level 3: genes.} The family is every (layer, gene) with $a_i(g)\ne0$ in at least 10 patients. This filter depends only on $|a_i(g)|$, which sign flips do not change, so the $p$-values remain valid conditionally on the family. Each gene receives a two-sided sign-flip $p$-value of its studentized mean ($2\times10^{6}$ flips in the real data, $2\times10^{5}$ in simulations, so that the smallest attainable $p$-value lies below the first Holm threshold), and Holm's procedure over the whole family controls the FWER under any dependence between genes.
+
 \subsection{Baselines}\label{sec:baselines}
-\todo{}
+$\Hone$ earns its place only if it detects what simpler network statistics miss. Every baseline is computed on the same $\dchange_i$, network, patients and sign flips. With $\dchange^{+}=\max(\dchange,0)$, $\dchange^{-}=\max(-\dchange,0)$, a threshold $\tau=1$ (a two-fold change for RNA) and $N(v)$ the neighbours of $v$:
+\begin{itemize}
+\item[B1] signed burden $\#\{v:\dchange(v)\ge\tau\}-\#\{v:\dchange(v)\le-\tau\}$;
+\item[B2] signed autocorrelation $I(\dchange^{+})-I(\dchange^{-})$, with Moran's $I$ \citep{moran1950} on the binary adjacency of $G$ and $I=0$ for a variable with zero variance;
+\item[B3] the size of the largest connected component of $\{\dchange\ge\tau\}$ minus that of $\{\dchange\le-\tau\}$;
+\item[B4] the $\Hzero$ asymmetry, total finite $\Hzero$ persistence of the higher- minus the lower-change filtration;
+\item[B5] Moran's $I(\dchange)$, direction-free and descriptive;
+\item[B6] single-gene paired tests, and B7 neighbourhood-smoothed single-gene tests, both with Holm over the same genes;
+\item[B8] specimen-level $\Hone$, each specimen filtered by its own values;
+\item[B9] local-extremum depth $\sum_v\max(0,\min_{u\in N(v)}\dchange(u)-\dchange(v))-\sum_v\max(0,\dchange(v)-\max_{u\in N(v)}\dchange(u))$.
+\end{itemize}
+B9 asks, without topology, whether some genes lie below all their changed neighbours, which is the configuration at the centre of a higher-change cycle. The directional baselines B1--B4 and B9 reverse sign exactly under exchange and enter the same sign-flip test.
+
 \subsection{Simulation study}\label{sec:simulation}
-\todo{}
-\subsection{Independent confirmation}\label{sec:confirmation}
-\todo{}
-\subsection{Pre-specification and access log}\label{sec:prespec}
-\todo{}
+All simulated data are synthetic. Networks are breadth-first balls of 800 genes (400 for the costly network-adjusted runs) around random seed genes of the real STRING graph at score $\ge700$, so that degree heterogeneity, clustering and triangle density are those of the real network. For patient $i$ and gene $v$,
+\begin{equation}
+x_{T,i}(v)=\sqrt{s}\,U_{i}(v)+\sqrt{1-s}\,E_{T,i}(v),\qquad x_{N,i}(v)=\sqrt{s}\,U_{i}(v)+\sqrt{1-s}\,E_{N,i}(v),
+\end{equation}
+with a shared patient component $U$, $s=0.2$, $N=78$ patients, and independent errors drawn from a standard normal, a Student $t_3$ scaled to unit variance, or a centred, unit-variance gamma(2) distribution. Under the null the two specimens of each patient are exchangeable for every noise type. Each run uses its own pre-assigned range of seeds; development runs are reported here, and a separate verification range is reserved for the final code.
+
+\paragraph{Calibration.} With no change at all, we record whether Level 1 and the gene family reject at 0.05 (single layer). A run fails the inflation gate if the one-sided exact binomial test of ``rejection rate $\le0.05$'' gives $p<0.01$. The calibration runs used the standardised change; sign-flip validity does not depend on which sign-equivariant change is used.
+
+\paragraph{Matched cycle--module experiment.} On each 400-gene ball we choose up to three centres $c$ of degree 4--20 whose neighbours alone enclose a hole (the clique complex of the subgraph induced by $N(c)$ has first Betti number at least one), with closed neighbourhoods that neither overlap nor are joined by an edge. From a single draw of noise we build two cohorts. In the \emph{cycle} arm every neighbour of every centre is increased by a fixed size in the tumour, and the centre is not. In the \emph{module} arm the centre and all but one randomly chosen neighbour are increased by the same size. The two arms have the same network region, the same number of changed genes, the same change sizes and the same noise; they differ only in whether the changed genes enclose an unchanged gene. For $A_i$, its rank variant, $Z_i$ ($R=19$), B1--B4 and B9 we record the studentized statistic $t$ in both arms, and summarise separation by (i) the area under the curve, $P(t_{\mathrm{cycle}}>t_{\mathrm{module}})$, across data sets, and (ii) the share of data sets in which $t_{\mathrm{cycle}}>t_{\mathrm{module}}$ within the matched pair. Sizes 1 and 2 (in units of the noise standard deviation) were fixed in advance, with 200 data sets each. The plain change \eqref{eq:delta} was used.
+
+\paragraph{Change at hubs (N3).} On 400-gene balls, the genes in the top 5\% of degree are increased by 1 in every tumour, so that topology changes only as a consequence of strong change at high-degree genes. We record the rejection rate of the Level 2 test of $Z_i$ ($R=19$, strata by degree decile $\times$ clustering tercile; 500 data sets). A rate near 0.05 means that the reference removes this effect.
+
+\subsection{Breast cancer data}\label{sec:cohort}
+The development cohort is TCGA-BRCA \citep{tcga2012}, open-access files of the NCI Genomic Data Commons: RNA-seq (STAR, TPM) and DNA methylation (Illumina 450K, SeSAMe $\beta$ values). We include female patients with one primary tumour and one solid normal tissue specimen in both layers, excluding FFPE specimens; the GDC file index gives 78 such patients. Before any molecular value is opened, GDC annotations are reviewed \citep{gdcannotations} and the final number of patients fixed. RNA: protein-coding genes with TPM $\ge1$ in at least half of all $2N$ specimens, $x=\log_2(\mathrm{TPM}+1)$. Methylation: probes on chromosomes X and Y and probes in the general mask of \citet{zhou2017} are removed, as are probes missing in more than 10\% of specimens; $\beta$ is clipped to $[0.001,0.999]$ and $M=\log_2(\beta/(1-\beta))$; a gene's value is the median $M$ over its TSS200 and TSS1500 probes (at least two), with the probe list per gene frozen and hashed. Pre-specified sensitivity analyses repeat Levels 1 and 2 with the rank variant, with the standardised change, with STRING score thresholds 400 and 900, with composition adjustment (tumour-minus-normal differences of stromal and immune gene-set scores \citep{yoshihara2013} regressed out of $\dchange_i$ through the origin, which keeps the sign reversal), within pairs whose two specimens share a plate, and with a reversed tie rule for gene attribution. An independent cohort is planned for confirmation (Section~\ref{sec:limitations}). The full plan is in Supplement~\ref{sec:plan}.
