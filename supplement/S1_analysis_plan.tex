@@ -8,6 +8,13 @@ The complete analysis plan is \texttt{docs/analysis\_plan.md} in the code reposi
 
 \paragraph{Claims not made.} That a cycle or module is a pathway or mechanism; that a gene causes the difference; that the data show how a tumour develops; that topology finds information absent from the molecular data (the diagrams are functions of the change and the network); that a new topological construction is introduced; that a replicated signature gene is a clinical biomarker; that a result attenuated by composition adjustment reflects regulation within tumour cells.
 
-\paragraph{Simulation gates.} Each null run passes if the one-sided exact binomial test of ``rejection rate $\le0.05$'' gives $p\ge0.01$. Development and verification seed ranges are separate; the verification suite is run once on the final code, and its results are the ones reported in the final version of this paper.
+\paragraph{Simulation gates.} Each null run passes if the one-sided exact binomial test of ``rejection rate $\le0.05$'' gives $p\ge0.01$. Development and verification seed ranges are separate; the verification runs are made once on the final code, and their results are the ones reported in the main text. Table~\ref{tab:matcheddev} gives the matched experiment on development seeds.
+
+\begin{table}[H]
+\centering\small
+\caption{Matched cycle--module experiment on development seeds (\devdecOneN{} data sets per size); columns as in Table~\ref{tab:matched}.}
+\label{tab:matcheddev}
+\input{generated/tab_matched_dev}
+\end{table}
 
 \paragraph{Changes made after results were seen.} The matched experiment, the network-adjusted score and baseline B9 were added to the plan before their simulations were run. No endpoint has been added or changed after its simulation results were seen. \todo{keep this list complete up to the freeze.}
