@@ -1,10 +1,12 @@
 \section{Analysis plan}\label{sec:plan}
 
-The complete analysis plan is \texttt{docs/analysis\_plan.md} in the code repository \coderepo. It is written before any tumour-versus-normal outcome of patient data is computed and will be frozen by the Git tag \texttt{plan-v1.0}, whose SHA-256 is recorded in \texttt{docs/provenance}. Its main elements are listed here.
+The complete analysis plan is \texttt{docs/analysis\_plan.md} in the code repository \coderepo. It was written before any tumour-versus-normal outcome of patient data was computed and frozen by the Git tag \texttt{plan-v1.0} (commit \texttt{8443cee}), whose SHA-256 is recorded in \texttt{docs/provenance}. Its main elements are listed here.
 
 \paragraph{Hypotheses, in order.} $H_{\mathrm{sym}}$: within each patient tumour and normal profiles are exchangeable (Level 1, sign-flip test of $A_i$). $H_{\mathrm{net}}$: the network-adjusted asymmetry $Z_i$ is sign-symmetric (Level 2). $H_{\mathrm{gene}}(g)$: the gene score $a_i(g)$ is sign-symmetric (Level 3, Holm over the whole gene family). Rejecting one does not imply rejecting another.
 
-\paragraph{Pre-declared outcomes.} (A) Levels 1 and 2 supported, genes stable and confirmed in the independent cohort: reproducible, network-specific directional organisation with replicated signature genes. (B) Levels 1 and 2 supported, genes unstable or unconfirmed: a patient-level result without gene-specific claims. (C) Level 1 supported, Level 2 not: directional asymmetry without demonstrated network specificity. (D) Level 1 not supported: a calibrated negative result. In every outcome the comparison with baselines B1--B9 is reported.
+\paragraph{Pre-declared outcomes.} (A) Levels 1 and 2 supported, genes stable and confirmed in the independent cohort: reproducible, network-specific directional organisation with replicated signature genes. (B) Levels 1 and 2 supported, genes unstable or unconfirmed: a patient-level result without gene-specific claims. (C) Level 1 supported, Level 2 not: directional asymmetry without demonstrated network specificity. (D) Level 1 not supported: a calibrated negative result. In every outcome the comparison with baselines B1--B9 is reported. The plan does not define ``supported'' further; Section~\ref{sec:res-tcga} reports both readings for RNA.
+
+\paragraph{Matched experiment.} The plan states: ``If $A_i$ or $Z_i$ separates the arms better than B2, B3, B4 and B9, $\Hone$ adds information here. If a simpler statistic does as well, the paper says so.'' Separation was to be summarised by the AUC across data sets.
 
 \paragraph{Claims not made.} That a cycle or module is a pathway or mechanism; that a gene causes the difference; that the data show how a tumour develops; that topology finds information absent from the molecular data (the diagrams are functions of the change and the network); that a new topological construction is introduced; that a replicated signature gene is a clinical biomarker; that a result attenuated by composition adjustment reflects regulation within tumour cells.
 
@@ -14,7 +16,32 @@ The complete analysis plan is \texttt{docs/analysis\_plan.md} in the code reposi
 \centering\small
 \caption{Matched cycle--module experiment on development seeds (\devdecOneN{} data sets per size); columns as in Table~\ref{tab:matched}.}
 \label{tab:matcheddev}
-\input{generated/tab_matched_dev}
+{\footnotesize\setlength{\tabcolsep}{4pt}\input{generated/tab_matched_dev}}
 \end{table}
 
-\paragraph{Changes made after results were seen.} The matched experiment, the network-adjusted score and baseline B9 were added to the plan before their simulations were run. No endpoint has been added or changed after its simulation results were seen. After the freeze, one technical amendment (copies of arrays passed to GUDHI; no effect on any value) was made before results were computed, and one exploratory analysis (composition-adjusted $Z_i$) was added after the frozen results were seen; both are recorded in the repository and labelled as such here. The STRING 400 and 900 sensitivity analyses used the genes of the primary network.
+\paragraph{Pre-specified and exploratory analyses.} Table~\ref{tab:prespec} lists every analysis of the TCGA data by endpoint.
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{Analyses of the TCGA-BRCA data. Pre-specified: in the frozen plan (tag \texttt{plan-v1.0}). Exploratory: decided after the frozen results were seen.}
+\label{tab:prespec}
+\begin{tabular}{p{0.2\textwidth}p{0.46\textwidth}p{0.26\textwidth}}
+\toprule
+Endpoint & Analysis & Status \\
+\midrule
+Level 1, $A_i$ & Primary test, both layers, Holm over layers & Pre-specified \\
+Level 1, $A_i$ & Rank variant; standardised change; STRING $\ge$400 and $\ge$900; composition adjustment; same-plate pairs & Pre-specified (sensitivity) \\
+Level 1, $A_i$ & Added measurement noise; one relabelling for all patients; degree-preserving rewiring & Pre-specified (descriptive) \\
+Level 1, $A_i$ & Placebo pseudo-pairs of tumours & Pre-specified (pipeline check) \\
+Level 2, $Z_i$ & Primary test, both layers, Holm over layers & Pre-specified \\
+Level 2, $Z_i$ & Composition adjustment & Exploratory \\
+Level 3, genes & Holm over the family; half-sample stability; reversed tie rule & Pre-specified \\
+Level 3, genes & B6 with Holm over the topology family; overlap with B7 & Exploratory \\
+Baselines & B1--B4, B8, B9 on the same sign flips; B6, B7 & Pre-specified \\
+Cross-layer & Spearman correlation of $A_i$ between layers & Pre-specified, exploratory \\
+Network & Hub--hub edges against degree-preserving rewiring (no patient data) & Exploratory \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Changes made after results were seen.} The matched experiment, the network-adjusted score and baseline B9 were added to the plan before their simulations were run. No endpoint has been added or changed after its simulation results were seen. After the freeze, one technical amendment (copies of arrays passed to GUDHI; no effect on any value) was made before results were computed. The analyses marked exploratory in Table~\ref{tab:prespec} were added after the frozen results were seen; all are recorded in the repository. The STRING 400 and 900 sensitivity analyses used the genes of the primary network.
